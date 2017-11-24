@@ -31,20 +31,17 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.Random;
-
 
 public class ImageClassification {
 
     private static Logger log = LoggerFactory.getLogger(ImageClassification.class);
     public static void main(String[] args) throws Exception {
         int seed = 123;
-        int height = 28;
-        int width = 28;
-        int channels = 3;
-        int batchSize = 10;
-        int numEpochs = 15;
+        int height = 100;
+        int width = 100;
+        int channels = 1;
+        int batchSize = 20;
+        int numEpochs = 50;
 
         Random rand = new Random(seed);
 
@@ -69,38 +66,31 @@ public class ImageClassification {
         recordReader.initialize(train);
         int outputNum = recordReader.numLabels();
 
-
         int labelIndex = 1;
-
         DataSetIterator dataIter = new RecordReaderDataSetIterator(recordReader, batchSize, labelIndex, outputNum);
 
-
         // Scale pixel values to 0-1
-
         DataNormalization scaler = new ImagePreProcessingScaler(0,1);
         scaler.fit(dataIter);
         dataIter.setPreProcessor(scaler);
 
-
         // Build Our Neural Network
-
         log.info("**** Build Model ****");
-
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .iterations(1)
-                .learningRate(0.006)
+                .learningRate(0.005)
                 .updater(Updater.NESTEROVS)
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new DenseLayer.Builder()
                         .nIn(width*height*channels)
-                        .nOut(250)
+                        .nOut(100)
                         .weightInit(WeightInit.XAVIER)
                         .build())
                 .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                        .nIn(250)
+                        .nIn(100)
                         .nOut(outputNum)
                         .weightInit(WeightInit.XAVIER)
                         .build())
@@ -111,16 +101,16 @@ public class ImageClassification {
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
 
-        model.setListeners(new ScoreIterationListener(10));
+        model.setListeners(new ScoreIterationListener(100));
 
         log.info("*****TRAIN MODEL********");
-        System.out.println("*****TRAIN MODEL********");
+
         for(int i = 0; i<numEpochs; i++){
             model.fit(dataIter);
         }
 
         log.info("******EVALUATE MODEL******");
-        System.out.println("******EVALUATE MODEL******");
+
         recordReader.reset();
 
         recordReader.initialize(test);

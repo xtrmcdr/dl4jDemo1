@@ -45,7 +45,7 @@ public class ImageClassification {
 
         Random rand = new Random(seed);
 
-        File topDir =new ClassPathResource("101_ObjectCategories").getFile();
+        File topDir =new ClassPathResource("ObjectCategories").getFile();
 
         FileSplit filesInDir = new FileSplit(topDir, NativeImageLoader.ALLOWED_FORMATS , rand);
 
@@ -128,7 +128,6 @@ public class ImageClassification {
         }
 
         log.info(eval.stats());
-        System.out.println(eval.stats());
 
 
     }
